@@ -1,0 +1,13 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=587
+
+The zip file contains three files - fgl.c, parsers.h, and source.mak.
+
+When 'fgl.c' file in fgl.zip is compiled with exuberant ctags source files, which you can download, ctags(executable) will generate tags for functions, cursor ids, prepared statements id, and global/module level variables. I compiled exuberant ctags source in AIX and Linux without any problem. Only trouble I faced was that source codes in ctags-5.4 tar file had DOS line breaks and had to translate them to UNIX line breaks using dos2unix utility.
+
+If you use taglist.vim, add the following lines in taglist.vim script. 
+Scroll down the script to a section where tag types are defined for different languages:
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+" fgl language
+let s:tlist_def_fgl_settings = 'fgl;f:function;c:cursor;s:prepared;v:variable'
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
