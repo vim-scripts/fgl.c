@@ -1,7 +1,7 @@
 /*
-*   $Id: parsers.h,v 1.6 2002/10/16 02:19:03 darren Exp $
+*   $Id: parsers.h 579 2007-06-30 23:59:12Z dhiebert $
 *
-*   Copyright (c) 2000-2002, Darren Hiebert
+*   Copyright (c) 2000-2003, Darren Hiebert
 *
 *   This source code is released for free distribution under the terms of the
 *   GNU General Public License.
@@ -16,36 +16,42 @@
 
 /* Add the name of any new parser definition function here */
 #define PARSER_LIST \
-    FglParser, \
-    AsmParser, \
-    AspParser, \
-    AwkParser, \
-    BetaParser, \
-    CParser, \
-    CppParser, \
-    CobolParser, \
-    EiffelParser, \
-    FortranParser, \
-    JavaParser, \
-    LispParser, \
-    LuaParser, \
-    MakefileParser, \
-    PascalParser, \
-    PerlParser, \
-    PhpParser, \
-    PythonParser, \
-    RexxParser, \
-    RubyParser, \
-    SchemeParser, \
-    ShParser, \
-    SlangParser, \
-    SqlParser, \
-    TclParser, \
-    VeraParser, \
-    VerilogParser, \
-    VimParser, \
-    YaccParser
+	AsmParser, \
+	AspParser, \
+	AwkParser, \
+	BasicParser, \
+	BetaParser, \
+	CParser, \
+	CppParser, \
+	CsharpParser, \
+	CobolParser, \
+	EiffelParser, \
+	ErlangParser, \
+	FglParser, \
+	FortranParser, \
+	HtmlParser, \
+	JavaParser, \
+	JavaScriptParser, \
+	LispParser, \
+	LuaParser, \
+	MakefileParser, \
+	PascalParser, \
+	PerlParser, \
+	PhpParser, \
+	PythonParser, \
+	RexxParser, \
+	RubyParser, \
+	SchemeParser, \
+	ShParser, \
+	SlangParser, \
+	SmlParser, \
+	SqlParser, \
+	TclParser, \
+	VeraParser, \
+	VerilogParser, \
+	VimParser, \
+	YaccParser
 
-#endif	/* _PARSERS_H */
+#endif  /* _PARSERS_H */
 
-/* vi:set tabstop=8 shiftwidth=4: */
+/* vi:set tabstop=4 shiftwidth=4: */
