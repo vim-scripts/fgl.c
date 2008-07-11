@@ -29,8 +29,15 @@ static kindOption FglKinds [] = {
 
 static char lastChar(const unsigned char* ln)
 {
+   const unsigned char *str;
+   const unsigned char *lastp;
    int len = strlen(ln);
-   const unsigned char *lastp = ln+len-1;
+   
+   str=strchr(ln, '#');
+   if (str != 0) 
+      lastp=str-1;
+   else
+      lastp=ln+len-1;
 
    /* get the last non-white char */
    while (isspace ((int) *lastp))
@@ -44,6 +51,7 @@ static void findFglTags (void)
 {
    vString *name = vStringNew ();
    const unsigned char *line;
+   const unsigned char *lastchar;
    int var_define_block=0;
    int in_comment=0;
    unsigned int i;
@@ -110,7 +118,7 @@ static void findFglTags (void)
             vStringTerminate (name);
             makeSimpleTag (name, FglKinds, K_MODULE);
             vStringClear (name);
-   
+
             /* if the current line ends with a comma, variable declaration continues to the next line */
             if ((int)lastChar(line) == ',') 
                var_define_block=1;
@@ -118,7 +126,6 @@ static void findFglTags (void)
                var_define_block=0;
          }
       }
-
 
       /* just 'define' on the line */
       if ( var_define_block==0 && strncmp (pos, "define", (size_t) 6) == 0 )
@@ -159,7 +166,7 @@ static void findFglTags (void)
          vStringClear (name);
 
          /* if the current line ends with a comma, variable declaration continues to the next line */
-         if ((int)lastChar(line) != ',') 
+         if ((int)lastChar(line) == ',') 
             var_define_block=1;
 
          continue;
