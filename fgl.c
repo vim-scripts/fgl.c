@@ -15,7 +15,7 @@
 
 /* DATA DEFINITIONS */
 typedef enum eFglKinds {
-   K_FUNCTION, K_PREPARE, K_CURSOR, K_MODULE
+   K_FUNCTION, K_PREPARE, K_CURSOR, K_VARIABLE
 } fglKind;
 
 static kindOption FglKinds [] = {
@@ -34,8 +34,13 @@ static char lastChar(const unsigned char* ln)
    int len = strlen(ln);
    
    str=strchr(ln, '#');
-   if (str != 0) 
-      lastp=str-1;
+   if (str != 0)
+   { 
+      if (str == ln)
+         return 0;
+
+      lastp = str-1;
+   }  
    else
       lastp=ln+len-1;
 
@@ -52,8 +57,10 @@ static void findFglTags (void)
    vString *name = vStringNew ();
    const unsigned char *line;
    const unsigned char *lastchar;
+   const unsigned char *lastp;
    int var_define_block=0;
    int in_comment=0;
+   int in_function=0;
    unsigned int i;
 
    unsigned char pos[CMP_WORD_SIZE];
@@ -63,11 +70,10 @@ static void findFglTags (void)
       /* advance the point to the first non whitespace char */
       while (isspace ((int) *line))
          ++line;
-
       /* skip comment */
       if ((int) *line == '{')  /*beginning of a comment*/
         {
-           /* comment finish on the same line */
+           /* comment finishes on the same line? */
            if ((int)lastChar(line) != '}') 
               in_comment=1;
            continue;
@@ -76,84 +82,93 @@ static void findFglTags (void)
       /* check #... or #...} or alrady in a comment block*/
       if ((int) *line == '#' || in_comment) 
       {
-   
          if (in_comment)
          {
-            if ((int)lastChar(line) == '}') 
+            /* get the last non-white char */
+            lastp = line + strlen(line) - 1;
+            while (isspace ((int) *lastp))
+               --lastp;
+
+            if ((int)*lastp == '}') 
                in_comment=0; /* exit comment */
          }
-
          continue;
       }
-     
-     
 
-      /* change the target keyword to lowercase */
+      /* change the target to lowercase before comparison */
       for (i=0; i<CMP_WORD_SIZE-1 && i<strlen(line); i++)
          pos[i]=tolower(line[i]);
     
       pos[i]='\n';
 
-
-      if (var_define_block)
+      /* catches exception. ex) , varname datatype*/
+      if ( strncmp (pos, "end record,", (size_t) 11) == 0 ) 
       {
-         const unsigned char *cp = line;
+         var_define_block=1;
+         continue;
+      }
+      if ( in_function==0 && (int)*line==',' ) var_define_block=1;
 
-         if ( strlen(cp) == 0 ) /* there is a empty line between variable declaration under single define keyword */
+
+      /* are we in define block outside function def */
+      if (var_define_block && in_function == 0)
+      {
+
+         const unsigned char *cp;
+         /* catches variable followed by a comma */
+         while (isspace ((int) *line) || (int)*line == ',')
+            ++line;
+
+         cp = line;
+
+         /* empty line in define block */
+         if ( strlen(cp) == 0 ) 
             continue;
 
-         if ((int) *cp != 'm' && (int) *cp != 'g') 
+         while (isalnum ((int) *cp)  ||  *cp == '_')
          {
-            var_define_block=0;
+            vStringPut (name, (int) *cp);
+            ++cp;
          }
-         else
-         {
-
-            while (isalnum ((int) *cp)  ||  *cp == '_')
-            {
-               vStringPut (name, (int) *cp);
-               ++cp;
-            }
    
-            vStringTerminate (name);
-            makeSimpleTag (name, FglKinds, K_MODULE);
-            vStringClear (name);
+         vStringTerminate (name);
+         makeSimpleTag (name, FglKinds, K_VARIABLE);
+         vStringClear (name);
 
-            /* if the current line ends with a comma, variable declaration continues to the next line */
-            if ((int)lastChar(line) == ',') 
-               var_define_block=1;
-            else
-               var_define_block=0;
-         }
+         /* if the current line ends with a comma */
+         if ((int)lastChar(line) == ',') 
+            var_define_block=1;
+         else
+            var_define_block=0;
       }
 
-      /* just 'define' on the line */
-      if ( var_define_block==0 && strncmp (pos, "define", (size_t) 6) == 0 )
+
+      if (in_function==0 && strncmp (pos, "define", (size_t) 6) == 0 )
       {
-         int len = strlen(line);
-         const unsigned char *lastp = line+len-1;
-         const unsigned char *cp = line + 5;
+         const unsigned char *cp;
+
+         lastp=strchr(line, '#');
+         if ( lastp != 0 )
+            lastp = strchr(line, '#')-1;
+         else
+            lastp = line+strlen(line)-1;
+
+         cp = line + 5;
 
          /* get the last non-white char */
           while (isspace ((int) *lastp))
              --lastp;
 
+         /* just 'define' on the line */
          if (cp == lastp) 
          {
             var_define_block = 1;
             continue;
          }
-      }
 
-      /* Look for a line beginning with module "define" followed by name */
-      if (var_define_block==0 &&  strncmp (pos, "define", (size_t) 6) == 0 )
-      {
-         const unsigned char *cp = line + 7;
+         cp = line + 7;
          while (isspace ((int) *cp))
             ++cp;
-
-         if ((int) *cp != 'm' && (int) *cp != 'g') 
-            continue;
 
          while (isalnum ((int) *cp)  ||  *cp == '_')
          {
@@ -162,10 +177,10 @@ static void findFglTags (void)
          }
 
          vStringTerminate (name);
-         makeSimpleTag (name, FglKinds, K_MODULE);
+         makeSimpleTag (name, FglKinds, K_VARIABLE);
          vStringClear (name);
 
-         /* if the current line ends with a comma, variable declaration continues to the next line */
+         /* if the current line ends with a comma */
          if ((int)lastChar(line) == ',') 
             var_define_block=1;
 
@@ -176,6 +191,7 @@ static void findFglTags (void)
       if (strncmp (pos, "function", (size_t) 8) == 0  && isspace ((int) line [8]))
       {
          const unsigned char *cp = line + 9;
+         in_function=1;
          while (isspace ((int) *cp))
             ++cp;
          while (isalnum ((int) *cp)  ||  *cp == '_')
