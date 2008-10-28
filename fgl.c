@@ -79,6 +79,13 @@ static void findFglTags (void)
            continue;
         }
 
+      if ((int) *line == '}' || in_comment)  
+        {
+         in_comment=0;
+         continue;
+        }
+
+
       /* check #... or #...} or alrady in a comment block*/
       if ((int) *line == '#' || in_comment) 
       {
@@ -141,7 +148,6 @@ static void findFglTags (void)
          else
             var_define_block=0;
       }
-
 
       if (in_function==0 && strncmp (pos, "define", (size_t) 6) == 0 )
       {
