@@ -194,9 +194,28 @@ static void findFglTags (void)
       }
 
       /* Look for a line beginning with "function" followed by name */
-      if (strncmp (pos, "function", (size_t) 8) == 0  && isspace ((int) line [8]))
+      if (strncmp (pos, "function", (size_t) 8) == 0 && 
+            isspace ((int) line [8])) 
       {
          const unsigned char *cp = line + 9;
+         in_function=1;
+         while (isspace ((int) *cp))
+            ++cp;
+         while (isalnum ((int) *cp)  ||  *cp == '_')
+         {
+            vStringPut (name, (int) *cp);
+            ++cp;
+         }
+         vStringTerminate (name);
+         makeSimpleTag (name, FglKinds, K_FUNCTION);
+         vStringClear (name);
+         continue;
+      }
+
+      if (strncmp (pos, "report", (size_t) 6) == 0 && 
+            isspace ((int) line [6]))
+      {
+         const unsigned char *cp = line + 7;
          in_function=1;
          while (isspace ((int) *cp))
             ++cp;
